@@ -32,7 +32,7 @@ def root_func(query):
 
 @app.post("/")
 async def root_post(req_param: ReqParam):
-    return root_func(req_param.qeury)
+    return root_func(req_param.query)
 @app.get("/")
 async def root_get(query:str = Query("")):
     return root_func(query)
