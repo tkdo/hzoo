@@ -88,6 +88,4 @@ conda activate np2_env
 # 安装2025年适配的AI框架
 conda install -c pytorch "pytorch>=2.4" "torchvision>=0.16"
 pip install "transformers>=5.3" "accelerate>=0.28"
-
-
 """

@@ -1,12 +1,8 @@
-from fastapi import FastAPI, Query
-from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
-app = FastAPI()
-
-class ReqParam(BaseModel):
-    query: str
+from fastapi import FastAPI, Request
+from fastapi import BackgroundTasks
+import uvicorn
 
 # 加载模型到 CPU
 model = AutoModelForCausalLM.from_pretrained(
@@ -16,7 +12,6 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 
 tokenizer = AutoTokenizer.from_pretrained("/Users/ss/.cache/modelscope/hub/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-
 
 def root_func(query):
     inputs = tokenizer(query, return_tensors="pt")
@@ -29,11 +24,27 @@ def root_func(query):
     print(result)
     return result
  
+async def parse_param(request:Request):
+    param = {}
+    if request.method == "GET":
+        param = request.query_params
+    if request.method == "POST":
+        param = await request.json()
+    return dict(param)
 
-@app.post("/")
-async def root_post(req_param: ReqParam):
-    return root_func(req_param.query)
-@app.get("/")
-async def root_get(query:str = Query("")):
-    return root_func(query)
+async def home(background_tasks: BackgroundTasks, request:Request):
+    result  = ""
+    try:
+        param = await parse_param(request)
+        query = param.get("query")
+        result = root_func(query)
+    except Exception as e:
+        result = str(e)
+    return result
+
+app = FastAPI()
+app.add_api_route(path="/", endpoint=home, methods=["POST", "GET"])
+
+if __name__ == "__main__":
+    uvicorn.run(app)
 
