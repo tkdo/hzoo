@@ -33,18 +33,18 @@ async def parse_param(request:Request):
     return dict(param)
 
 async def home(background_tasks: BackgroundTasks, request:Request):
-    result  = ""
+    result  = {"code":1, "message":"success"}
     try:
         param = await parse_param(request)
         query = param.get("query")
-        result = root_func(query)
+        result["data"] = root_func(query)
     except Exception as e:
-        result = str(e)
+        result["message"] = str(e)
     return result
 
 app = FastAPI()
 app.add_api_route(path="/", endpoint=home, methods=["POST", "GET"])
 
 if __name__ == "__main__":
-    uvicorn.run(app)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
